@@ -25,6 +25,3 @@ defineProps({
   sessions: Array
 })
 </script>
-<style lang="css">
-  
-</style>
