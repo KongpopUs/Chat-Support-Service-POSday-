@@ -2,7 +2,7 @@
     <div class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
       <div class="bg-white w-full max-w-4xl rounded-xl shadow-lg flex flex-col max-h-[90vh]">
   
-        <div class="flex justify-between items-center p-4 border-b">
+        <div class="flex justify-between items-center p-4">
           <h3 class="text-lg font-semibold">เลือกไฟล์รูปภาพ</h3>
           <button @click="$emit('close')">
             <span class="material-symbols-outlined">close</span>

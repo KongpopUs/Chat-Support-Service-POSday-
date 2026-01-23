@@ -19,7 +19,7 @@
 
 <script setup>
 import ChatSessionItem from './ChatSessionItem.vue'
-import EndJobButton from '../../components/history/EndJobButton.vue'
+import EndJobButton from '../../components/button/EndJobButton.vue'
 
 defineProps({
   sessions: Array

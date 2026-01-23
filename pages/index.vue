@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center">
+  <div class="min-h-screen flex items-center justify-center bg-white">
     <div class="max-w-4xl mx-auto text-center">
       <img
         src="/posday-logo.jpeg"

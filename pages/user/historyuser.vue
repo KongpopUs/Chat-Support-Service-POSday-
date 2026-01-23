@@ -71,8 +71,8 @@
 </template>
 
 <script setup lang="ts">
-import ViewHistoryButton from '../../components/history/ViewHistoryButton.vue'
-import NextPageButton from '../../components/history/NextPageButton.vue'
+import ViewHistoryButton from '../../components/button/ViewHistoryButton.vue'
+import NextPageButton from '../../components/button/NextPageButton.vue'
 
 import { ref, computed } from 'vue'
 

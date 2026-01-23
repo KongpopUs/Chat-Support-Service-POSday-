@@ -50,10 +50,18 @@
            focus:outline-none focus:ring-2 focus:ring-sky-500" />
                 </div>
 
+                <div class="flex mx-3 mt-3 gap-3 border-b border-gray-300">
+                    <button v-for="tab in tabs" :key="tab.value" @click="activeTab = tab.value"
+                        class="w-24 pb-2 transition" :class="activeTab === tab.value
+                            ? 'text-sky-500 border-b-2 border-sky-500 font-semibold'
+                            : 'text-gray-400 hover:text-sky-400'">
+                        {{ tab.label }}
+                    </button>
+                </div>
 
                 <div class="flex flex-wrap p-3">
                     <div class="flex text-base truncate mr-2">
-                        ประวัติแชท
+                        คิวทั้งหมด
                         <span class="text-gray-500 ml-1">
                             จำนวน
                         </span>
@@ -71,10 +79,11 @@
                             <tr>
                                 <th class="px-4 py-1 text-left">ลำดับ</th>
                                 <th class="px-4 py-1 text-left">เลขที่คิว</th>
-                                <th class="px-4 py-1 text-left">Support</th>
-                                <th class="px-4 py-1 text-left">เวลาสนทนา</th>
-                                <th class="px-4 py-1 text-left">เวลาเริ่มต้น</th>
-                                <th class="px-4 py-1 text-left">เวลาสิ้นสุด</th>
+                                <th class="px-4 py-1 text-left">ชื่อลูกค้า</th>
+                                <th class="px-4 py-1 text-left">หมายเลขสมาชิก</th>
+                                <th class="px-4 py-1 text-left">วันที่</th>
+                                <th class="px-4 py-1 text-left">เวลาขอรับบริการ</th>
+                                <th class="px-4 py-1 text-left">สถานะ</th>
                                 <th class="px-4 py-1 text-center">คำสั่ง</th>
                             </tr>
                         </thead>
@@ -83,17 +92,17 @@
                             <tr v-for="item in paginatedData" :key="item.id" class="hover:bg-gray-50">
                                 <td class="px-4 py-1 text-left text-sm text-gray-600">{{ item.id }}</td>
                                 <td class="px-4 py-1 text-left text-sm text-gray-600">{{ item.que_no }}</td>
-                                <td class="px-4 py-1 text-left text-sm text-gray-600">{{ item.support }}</td>
-                                <td class="px-4 py-1 text-left text-sm text-gray-600">{{ item.chat_time }}</td>
+                                <td class="px-4 py-1 text-left text-sm text-gray-600">{{ item.user }}</td>
+                                <td class="px-4 py-1 text-left text-sm text-gray-600">{{ item.member_no }}</td>
                                 <td class="px-4 py-1 text-left text-sm text-gray-600">{{ item.start_date }}</td>
-                                <td class="px-4 py-1 text-left text-sm text-gray-600">{{ item.end_time }}</td>
+                                <td class="px-4 py-1 text-left text-sm text-gray-600">{{ item.start_time }}</td>
+                                <td class="px-4 py-1 text-left text-sm text-gray-600">{{ item.status }}</td>
                                 <td class="px-4 py-1 text-center text-sm text-gray-600 ">
-                                    <ViewHistoryButton @click="openHistory(item)" />
+                                    <AcceptJobButton @accept="openPreviewJob" />
                                 </td>
                             </tr>
                         </tbody>
                     </table>
-
                 </div>
 
                 <div class="mt-auto">
@@ -102,18 +111,26 @@
                 </div>
             </div>
         </div>
+
+        <PreviewJob v-if="showPreviewJob" @close="showPreviewJob = false" />
     </div>
 
 </template>
 
 <script setup lang="ts">
-import ViewHistoryButton from '../../components/history/ViewHistoryButton.vue'
-import NextPageButton from '../../components/history/NextPageButton.vue'
+import NextPageButton from '../../components/button/NextPageButton.vue'
+import AcceptJobButton from '../../components/button/AcceptJobButton.vue'
 
 import { ref, computed } from 'vue'
+import PreviewJob from '../../components/modal/PreviewJob.vue'
+
+const openPreviewJob = () => {
+  showPreviewJob.value = true
+}
 
 const rowsPerPage = 15
 const currentPage = ref(1)
+const showPreviewJob = ref(false)
 
 const totalPages = computed(() =>
     Math.ceil(data.length / rowsPerPage)
@@ -124,178 +141,171 @@ const paginatedData = computed(() => {
     return data.slice(start, start + rowsPerPage)
 })
 
+const activeTab = ref('all')
 
-const openHistory = (item: any) => {
-    console.log('ดูประวัติของ:', item)
-    // ตัวอย่างในอนาคต
-    // navigateTo(`/user/history/${item.id}`)
-    // หรือเปิด modal
-}
+const tabs = [
+    { label: 'ทั้งหมด', value: 'all' },
+    { label: 'ดำเนินการ', value: 'progress' },
+    { label: 'สำเร็จ', value: 'done' }
+]
 
 
 const data = [
     {
         id: '1',
         que_no: 'Q01090169',
-        support: 'สมพร',
-        chat_time: '00:15:45',
+        user: 'ไก่ บริษัท เป็ดย่าง',
+        member_no: 'MB001',
         start_date: '09/01/2569',
-        end_time: '09/01/2569',
-        history: 'สวัสดีค่ะ จะสอบถาม...'
+        start_time: '15:49:05',
+        status: 'กำลังดำเนินการ'
     },
     {
-        id: '2',
-        que_no: 'Q02090169',
-        support: 'สมหมาย',
-        chat_time: '00:14:21',
+        id: '1',
+        que_no: 'Q01090169',
+        user: 'ไก่ บริษัท เป็ดย่าง',
+        member_no: 'MB001',
         start_date: '09/01/2569',
-        end_time: '09/01/2569',
-        history: 'สวัสดีครับ จะสอบถาม...'
+        start_time: '15:49:05',
+        status: 'กำลังดำเนินการ'
+    },{
+        id: '1',
+        que_no: 'Q01090169',
+        user: 'ไก่ บริษัท เป็ดย่าง',
+        member_no: 'MB001',
+        start_date: '09/01/2569',
+        start_time: '15:49:05',
+        status: 'กำลังดำเนินการ'
     },
     {
-        id: '3',
-        que_no: 'Q03090169',
-        support: 'สุพล',
-        chat_time: '00:13:05',
+        id: '1',
+        que_no: 'Q01090169',
+        user: 'ไก่ บริษัท เป็ดย่าง',
+        member_no: 'MB001',
         start_date: '09/01/2569',
-        end_time: '09/01/2569',
-        history: 'สวัสดีครับ จะสอบถาม...'
+        start_time: '15:49:05',
+        status: 'กำลังดำเนินการ'
+    },{
+        id: '1',
+        que_no: 'Q01090169',
+        user: 'ไก่ บริษัท เป็ดย่าง',
+        member_no: 'MB001',
+        start_date: '09/01/2569',
+        start_time: '15:49:05',
+        status: 'กำลังดำเนินการ'
+    },{
+        id: '1',
+        que_no: 'Q01090169',
+        user: 'ไก่ บริษัท เป็ดย่าง',
+        member_no: 'MB001',
+        start_date: '09/01/2569',
+        start_time: '15:49:05',
+        status: 'กำลังดำเนินการ'
+    },{
+        id: '1',
+        que_no: 'Q01090169',
+        user: 'ไก่ บริษัท เป็ดย่าง',
+        member_no: 'MB001',
+        start_date: '09/01/2569',
+        start_time: '15:49:05',
+        status: 'กำลังดำเนินการ'
+    },{
+        id: '1',
+        que_no: 'Q01090169',
+        user: 'ไก่ บริษัท เป็ดย่าง',
+        member_no: 'MB001',
+        start_date: '09/01/2569',
+        start_time: '15:49:05',
+        status: 'กำลังดำเนินการ'
+    },{
+        id: '1',
+        que_no: 'Q01090169',
+        user: 'ไก่ บริษัท เป็ดย่าง',
+        member_no: 'MB001',
+        start_date: '09/01/2569',
+        start_time: '15:49:05',
+        status: 'กำลังดำเนินการ'
+    },{
+        id: '1',
+        que_no: 'Q01090169',
+        user: 'ไก่ บริษัท เป็ดย่าง',
+        member_no: 'MB001',
+        start_date: '09/01/2569',
+        start_time: '15:49:05',
+        status: 'กำลังดำเนินการ'
+    },{
+        id: '1',
+        que_no: 'Q01090169',
+        user: 'ไก่ บริษัท เป็ดย่าง',
+        member_no: 'MB001',
+        start_date: '09/01/2569',
+        start_time: '15:49:05',
+        status: 'กำลังดำเนินการ'
+    },{
+        id: '1',
+        que_no: 'Q01090169',
+        user: 'ไก่ บริษัท เป็ดย่าง',
+        member_no: 'MB001',
+        start_date: '09/01/2569',
+        start_time: '15:49:05',
+        status: 'กำลังดำเนินการ'
+    },{
+        id: '1',
+        que_no: 'Q01090169',
+        user: 'ไก่ บริษัท เป็ดย่าง',
+        member_no: 'MB001',
+        start_date: '09/01/2569',
+        start_time: '15:49:05',
+        status: 'กำลังดำเนินการ'
+    },{
+        id: '1',
+        que_no: 'Q01090169',
+        user: 'ไก่ บริษัท เป็ดย่าง',
+        member_no: 'MB001',
+        start_date: '09/01/2569',
+        start_time: '15:49:05',
+        status: 'กำลังดำเนินการ'
+    },{
+        id: '1',
+        que_no: 'Q01090169',
+        user: 'ไก่ บริษัท เป็ดย่าง',
+        member_no: 'MB001',
+        start_date: '09/01/2569',
+        start_time: '15:49:05',
+        status: 'กำลังดำเนินการ'
+    },{
+        id: '1',
+        que_no: 'Q01090169',
+        user: 'ไก่ บริษัท เป็ดย่าง',
+        member_no: 'MB001',
+        start_date: '09/01/2569',
+        start_time: '15:49:05',
+        status: 'กำลังดำเนินการ'
+    },{
+        id: '1',
+        que_no: 'Q01090169',
+        user: 'ไก่ บริษัท เป็ดย่าง',
+        member_no: 'MB001',
+        start_date: '09/01/2569',
+        start_time: '15:49:05',
+        status: 'กำลังดำเนินการ'
+    },{
+        id: '1',
+        que_no: 'Q01090169',
+        user: 'ไก่ บริษัท เป็ดย่าง',
+        member_no: 'MB001',
+        start_date: '09/01/2569',
+        start_time: '15:49:05',
+        status: 'กำลังดำเนินการ'
+    },{
+        id: '1',
+        que_no: 'Q01090169',
+        user: 'ไก่ บริษัท เป็ดย่าง',
+        member_no: 'MB001',
+        start_date: '09/01/2569',
+        start_time: '15:49:05',
+        status: 'กำลังดำเนินการ'
     },
-    {
-        id: '4',
-        que_no: 'Q04090169',
-        support: 'สุชาติ',
-        chat_time: '00:12:19',
-        start_date: '09/01/2569',
-        end_time: '09/01/2569',
-        history: 'สวัสดีครับ จะสอบถาม...'
-    },
-    {
-        id: '5',
-        que_no: 'Q05090169',
-        support: 'สุนีย์',
-        chat_time: '00:16:38',
-        start_date: '09/01/2569',
-        end_time: '09/01/2569',
-        history: 'สวัสดีค่ะ จะสอบถาม...'
-    },
-    {
-        id: '6',
-        que_no: 'Q06090169',
-        support: 'สุรีย์พร',
-        chat_time: '00:11:10',
-        start_date: '09/01/2569',
-        end_time: '09/01/2569',
-        history: 'สวัสดีค่ะ จะสอบถาม...'
-    },
-    {
-        id: '7',
-        que_no: 'Q07090169',
-        support: 'สมพล',
-        chat_time: '00:10:48',
-        start_date: '09/01/2569',
-        end_time: '09/01/2569',
-        history: 'สวัสดีครับ จะสอบถาม...'
-    },
-    {
-        id: '8',
-        que_no: 'Q08090169',
-        support: 'สมปอง',
-        chat_time: '00:09:48',
-        start_date: '09/01/2569',
-        end_time: '09/01/2569',
-        history: 'สวัสดีครับ จะสอบถาม...'
-    },
-    {
-        id: '9',
-        que_no: 'Q09090169',
-        support: 'ประเทือง',
-        chat_time: '00:17:06',
-        start_date: '09/01/2569',
-        end_time: '09/01/2569',
-        history: 'สวัสดีครับ จะสอบถาม...'
-    },
-    {
-        id: '10',
-        que_no: 'Q10090169',
-        support: 'ประสิทธิ์',
-        chat_time: '00:15:36',
-        start_date: '09/01/2569',
-        end_time: '09/01/2569',
-        history: 'สวัสดีครับ จะสอบถาม...'
-    },
-    {
-        id: '11',
-        que_no: 'Q11090169',
-        support: 'ประสิทธิ์',
-        chat_time: '00:15:36',
-        start_date: '09/01/2569',
-        end_time: '09/01/2569',
-        history: 'สวัสดีครับ จะสอบถาม...'
-    },
-    {
-        id: '12',
-        que_no: 'Q12090169',
-        support: 'ประสิทธิ์',
-        chat_time: '00:15:36',
-        start_date: '09/01/2569',
-        end_time: '09/01/2569',
-        history: 'สวัสดีครับ จะสอบถาม...'
-    },
-    {
-        id: '13',
-        que_no: 'Q13090169',
-        support: 'ประสิทธิ์',
-        chat_time: '00:15:36',
-        start_date: '09/01/2569',
-        end_time: '09/01/2569',
-        history: 'สวัสดีครับ จะสอบถาม...'
-    },
-    {
-        id: '14',
-        que_no: 'Q14090169',
-        support: 'ประสิทธิ์',
-        chat_time: '00:15:36',
-        start_date: '09/01/2569',
-        end_time: '09/01/2569',
-        history: 'สวัสดีครับ จะสอบถาม...'
-    },
-    {
-        id: '15',
-        que_no: 'Q15090169',
-        support: 'ประสิทธิ์',
-        chat_time: '00:15:36',
-        start_date: '09/01/2569',
-        end_time: '09/01/2569',
-        history: 'สวัสดีครับ จะสอบถาม...'
-    },
-    {
-        id: '16',
-        que_no: 'Q16090169',
-        support: 'ประสิทธิ์',
-        chat_time: '00:15:36',
-        start_date: '09/01/2569',
-        end_time: '09/01/2569',
-        history: 'สวัสดีครับ จะสอบถาม...'
-    },
-    {
-        id: '17',
-        que_no: 'Q17090169',
-        support: 'ประสิทธิ์',
-        chat_time: '00:15:36',
-        start_date: '09/01/2569',
-        end_time: '09/01/2569',
-        history: 'สวัสดีครับ จะสอบถาม...'
-    },
-    {
-        id: '18',
-        que_no: 'Q18090169',
-        support: 'ประสิทธิ์',
-        chat_time: '00:15:36',
-        start_date: '09/01/2569',
-        end_time: '09/01/2569',
-        history: 'สวัสดีครับ จะสอบถาม...'
-    }
 
 ]
 </script>
