@@ -10,7 +10,7 @@
 
       <div class="basis-3/3 flex flex-col min-h-0 relative w-full">
 
-        <ChatSessionInfo name="คุณA บริษัท BC" merchantId="1000001" phone="023456789"
+        <ChatSessionInfo name="A บริษัท BC" merchantId="1000001" phone="023456789"
           supportTime="00:10:15 นาที" avatar="A" />
 
         <div class="flex-1 min-h-0 bg-white relative">
@@ -97,7 +97,7 @@ const handleSendMessage = (text) => {
 const sessions = ref([
   {
     id: 1,
-    name: 'คุณA บริษัท BC',
+    name: 'A บริษัท BC',
     lastMessage: 'สวัสดีค่ะ มีเรื่องจะสอบถาม...',
     avatar: 'A',
     hasUnread: true

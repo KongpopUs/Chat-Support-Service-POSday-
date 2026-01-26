@@ -174,14 +174,14 @@ const openPreviewJob = (item: any) => {
 /* ================= DATA ================= */
 
 const dataAll = ref([
-    { que_no: 'Q001', user: 'A บริษัท BC', member_no: 'MB001', merchant:'1000001', tel:'023456789', start_date: '09/01/2569', start_time: '15:49:05', status: 'สำเร็จ' },
-    { que_no: 'Q002', user: 'B บริษัท CD', member_no: 'MB002', merchant:'1000002', tel:'024456789', start_date: '09/01/2569', start_time: '16:10:12', status: 'รอดำเนินการ' },
-    { que_no: 'Q003', user: 'C บริษัท DE', member_no: 'MB003', merchant:'1000003', tel:'025456789', start_date: '09/01/2569', start_time: '16:20:00', status: 'กำลังดำเนินการ' },
-    { que_no: 'Q004', user: 'D บริษัท EF', member_no: 'MB004', merchant:'1000004', tel:'026456789', start_date: '09/01/2569', start_time: '16:28:00', status: 'สำเร็จ' },
-    { que_no: 'Q005', user: 'E บริษัท FG', member_no: 'MB005', merchant:'1000005', tel:'027456789', start_date: '09/01/2569', start_time: '16:35:00', status: 'รอดำเนินการ' },
-    { que_no: 'Q006', user: 'F บริษัท GH', member_no: 'MB006', merchant:'1000006', tel:'028456789', start_date: '09/01/2569', start_time: '17:18:00', status: 'กำลังดำเนินการ' },
-    { que_no: 'Q007', user: 'G บริษัท HI', member_no: 'MB007', merchant:'1000007', tel:'029456789', start_date: '09/01/2569', start_time: '17:20:00', status: 'รอดำเนินการ' },
-    { que_no: 'Q008', user: 'H บริษัท IJ', member_no: 'MB008', merchant:'1000008', tel:'020456789', start_date: '09/01/2569', start_time: '17:38:00', status: 'รอดำเนินการ' },
+    { que_no: 'Q001', user: 'A บริษัท BC', member_no: 'MB001', merchant: '1000001', tel: '023456789', start_date: '09/01/2569', start_time: '15:49:05', status: 'กำลังดำเนินการ' },
+    { que_no: 'Q002', user: 'B บริษัท CD', member_no: 'MB002', merchant: '1000002', tel: '024456789', start_date: '09/01/2569', start_time: '16:10:12', status: 'รอดำเนินการ' },
+    { que_no: 'Q003', user: 'C บริษัท DE', member_no: 'MB003', merchant: '1000003', tel: '025456789', start_date: '09/01/2569', start_time: '16:20:00', status: 'กำลังดำเนินการ' },
+    { que_no: 'Q004', user: 'D บริษัท EF', member_no: 'MB004', merchant: '1000004', tel: '026456789', start_date: '09/01/2569', start_time: '16:28:00', status: 'สำเร็จ' },
+    { que_no: 'Q005', user: 'E บริษัท FG', member_no: 'MB005', merchant: '1000005', tel: '027456789', start_date: '09/01/2569', start_time: '16:35:00', status: 'รอดำเนินการ' },
+    { que_no: 'Q006', user: 'F บริษัท GH', member_no: 'MB006', merchant: '1000006', tel: '028456789', start_date: '09/01/2569', start_time: '17:18:00', status: 'กำลังดำเนินการ' },
+    { que_no: 'Q007', user: 'G บริษัท HI', member_no: 'MB007', merchant: '1000007', tel: '029456789', start_date: '09/01/2569', start_time: '17:20:00', status: 'สำเร็จ' },
+    { que_no: 'Q008', user: 'H บริษัท IJ', member_no: 'MB008', merchant: '1000008', tel: '020456789', start_date: '09/01/2569', start_time: '17:38:00', status: 'รอดำเนินการ' },
     // … data ที่เหลือของคุณ
 ])
 
