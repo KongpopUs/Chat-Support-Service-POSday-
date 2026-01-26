@@ -82,7 +82,7 @@
                                 <th class="px-4 py-1 text-left">เลขที่คิว</th>
                                 <th class="px-4 py-1 text-left">ชื่อลูกค้า</th>
                                 <th class="px-4 py-1 text-left">เลขสมาชิก</th>
-                                <th class="px-4 py-1 text-left">Merchant</th>
+                                <th class="px-4 py-1 text-left">รหัสร้านค้า</th>
                                 <th class="px-4 py-1 text-left">เบอร์โทรศัพท์</th>
                                 <th class="px-4 py-1 text-left">วันที่</th>
                                 <th class="px-4 py-1 text-left">เวลาขอรับบริการ</th>
@@ -182,7 +182,6 @@ const dataAll = ref([
     { que_no: 'Q006', user: 'F บริษัท GH', member_no: 'MB006', merchant: '1000006', tel: '028456789', start_date: '09/01/2569', start_time: '17:18:00', status: 'กำลังดำเนินการ' },
     { que_no: 'Q007', user: 'G บริษัท HI', member_no: 'MB007', merchant: '1000007', tel: '029456789', start_date: '09/01/2569', start_time: '17:20:00', status: 'สำเร็จ' },
     { que_no: 'Q008', user: 'H บริษัท IJ', member_no: 'MB008', merchant: '1000008', tel: '020456789', start_date: '09/01/2569', start_time: '17:38:00', status: 'รอดำเนินการ' },
-    // … data ที่เหลือของคุณ
 ])
 
 /* ================= SUMMARY ================= */

@@ -6,12 +6,10 @@
       <h2 class="text-2xl text-sky-400 font-semibold">Service</h2>
     </div>
 
-    <button
-      @click="goBack"
-      class="material-symbols-outlined text-stone-700 text-3xl"
-    >
+    <button @click="goBack" class="material-symbols-outlined text-stone-700 text-3xl">
       close
     </button>
+
   </div>
 </template>
 

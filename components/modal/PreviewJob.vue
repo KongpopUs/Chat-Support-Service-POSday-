@@ -36,7 +36,7 @@
                         </div>
 
                         <div class="py-2 flex">
-                            Merchant :
+                            รหัสร้านค้า :
                             <p class="text-sky-500 ml-1">
                                 {{ queue?.merchant }}
                             </p>

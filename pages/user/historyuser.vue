@@ -35,7 +35,7 @@
                             <tr>
                                 <th class="px-4 py-1 text-left">ลำดับ</th>
                                 <th class="px-4 py-1 text-left">เลขที่คิว</th>
-                                <th class="px-4 py-1 text-left">Support</th>
+                                <th class="px-4 py-1 text-left">ชื่อพนักงาน</th>
                                 <th class="px-4 py-1 text-left">เวลาสนทนา</th>
                                 <th class="px-4 py-1 text-left">เวลาเริ่มต้น</th>
                                 <th class="px-4 py-1 text-left">เวลาสิ้นสุด</th>
@@ -44,8 +44,10 @@
                         </thead>
 
                         <tbody class="divide-y divide-gray-200 border-b border-b-1 border-gray-200">
-                            <tr v-for="item in paginatedData" :key="item.id" class="hover:bg-gray-50">
-                                <td class="px-4 py-1 text-left text-sm text-gray-600">{{ item.id }}</td>
+                            <tr v-for="(item, index) in paginatedData" :key="index" class="hover:bg-gray-50">
+                                <td class="px-4 py-1 text-left text-sm text-gray-600">
+                                    {{ (currentPage - 1) * rowsPerPage + index + 1 }}
+                                </td>
                                 <td class="px-4 py-1 text-left text-sm text-gray-600">{{ item.que_no }}</td>
                                 <td class="px-4 py-1 text-left text-sm text-gray-600">{{ item.support }}</td>
                                 <td class="px-4 py-1 text-left text-sm text-gray-600">{{ item.chat_time }}</td>
@@ -91,16 +93,12 @@ const paginatedData = computed(() => {
 
 const openHistory = (item: any) => {
     console.log('ดูประวัติของ:', item)
-    // ตัวอย่างในอนาคต
-    // navigateTo(`/user/history/${item.id}`)
-    // หรือเปิด modal
 }
 
 
 const data = [
     {
-        id: '1',
-        que_no: 'Q01090169',
+        que_no: 'Q001',
         support: 'สมพร',
         chat_time: '00:15:45',
         start_date: '09/01/2569',
@@ -108,158 +106,37 @@ const data = [
         history: 'สวัสดีค่ะ จะสอบถาม...'
     },
     {
-        id: '2',
-        que_no: 'Q02090169',
+        que_no: 'Q002',
         support: 'สมหมาย',
-        chat_time: '00:14:21',
-        start_date: '09/01/2569',
-        end_time: '09/01/2569',
-        history: 'สวัสดีครับ จะสอบถาม...'
-    },
-    {
-        id: '3',
-        que_no: 'Q03090169',
-        support: 'สุพล',
-        chat_time: '00:13:05',
-        start_date: '09/01/2569',
-        end_time: '09/01/2569',
-        history: 'สวัสดีครับ จะสอบถาม...'
-    },
-    {
-        id: '4',
-        que_no: 'Q04090169',
-        support: 'สุชาติ',
-        chat_time: '00:12:19',
-        start_date: '09/01/2569',
-        end_time: '09/01/2569',
-        history: 'สวัสดีครับ จะสอบถาม...'
-    },
-    {
-        id: '5',
-        que_no: 'Q05090169',
-        support: 'สุนีย์',
-        chat_time: '00:16:38',
+        chat_time: '00:13:18',
         start_date: '09/01/2569',
         end_time: '09/01/2569',
         history: 'สวัสดีค่ะ จะสอบถาม...'
     },
     {
-        id: '6',
-        que_no: 'Q06090169',
-        support: 'สุรีย์พร',
-        chat_time: '00:11:10',
-        start_date: '09/01/2569',
-        end_time: '09/01/2569',
-        history: 'สวัสดีค่ะ จะสอบถาม...'
-    },
-    {
-        id: '7',
-        que_no: 'Q07090169',
-        support: 'สมพล',
-        chat_time: '00:10:48',
-        start_date: '09/01/2569',
-        end_time: '09/01/2569',
-        history: 'สวัสดีครับ จะสอบถาม...'
-    },
-    {
-        id: '8',
-        que_no: 'Q08090169',
+        que_no: 'Q003',
         support: 'สมปอง',
-        chat_time: '00:09:48',
+        chat_time: '00:12:05',
         start_date: '09/01/2569',
         end_time: '09/01/2569',
-        history: 'สวัสดีครับ จะสอบถาม...'
+        history: 'สวัสดีค่ะ จะสอบถาม...'
     },
     {
-        id: '9',
-        que_no: 'Q09090169',
+        que_no: 'Q004',
         support: 'ประเทือง',
-        chat_time: '00:17:06',
+        chat_time: '00:11:14',
         start_date: '09/01/2569',
         end_time: '09/01/2569',
-        history: 'สวัสดีครับ จะสอบถาม...'
+        history: 'สวัสดีค่ะ จะสอบถาม...'
     },
     {
-        id: '10',
-        que_no: 'Q10090169',
-        support: 'ประสิทธิ์',
-        chat_time: '00:15:36',
+        que_no: 'Q005',
+        support: 'ประทีป',
+        chat_time: '00:13:56',
         start_date: '09/01/2569',
         end_time: '09/01/2569',
-        history: 'สวัสดีครับ จะสอบถาม...'
+        history: 'สวัสดีค่ะ จะสอบถาม...'
     },
-    {
-        id: '11',
-        que_no: 'Q11090169',
-        support: 'ประสิทธิ์',
-        chat_time: '00:15:36',
-        start_date: '09/01/2569',
-        end_time: '09/01/2569',
-        history: 'สวัสดีครับ จะสอบถาม...'
-    },
-    {
-        id: '12',
-        que_no: 'Q12090169',
-        support: 'ประสิทธิ์',
-        chat_time: '00:15:36',
-        start_date: '09/01/2569',
-        end_time: '09/01/2569',
-        history: 'สวัสดีครับ จะสอบถาม...'
-    },
-    {
-        id: '13',
-        que_no: 'Q13090169',
-        support: 'ประสิทธิ์',
-        chat_time: '00:15:36',
-        start_date: '09/01/2569',
-        end_time: '09/01/2569',
-        history: 'สวัสดีครับ จะสอบถาม...'
-    },
-    {
-        id: '14',
-        que_no: 'Q14090169',
-        support: 'ประสิทธิ์',
-        chat_time: '00:15:36',
-        start_date: '09/01/2569',
-        end_time: '09/01/2569',
-        history: 'สวัสดีครับ จะสอบถาม...'
-    },
-    {
-        id: '15',
-        que_no: 'Q15090169',
-        support: 'ประสิทธิ์',
-        chat_time: '00:15:36',
-        start_date: '09/01/2569',
-        end_time: '09/01/2569',
-        history: 'สวัสดีครับ จะสอบถาม...'
-    },
-    {
-        id: '16',
-        que_no: 'Q16090169',
-        support: 'ประสิทธิ์',
-        chat_time: '00:15:36',
-        start_date: '09/01/2569',
-        end_time: '09/01/2569',
-        history: 'สวัสดีครับ จะสอบถาม...'
-    },
-    {
-        id: '17',
-        que_no: 'Q17090169',
-        support: 'ประสิทธิ์',
-        chat_time: '00:15:36',
-        start_date: '09/01/2569',
-        end_time: '09/01/2569',
-        history: 'สวัสดีครับ จะสอบถาม...'
-    },
-    {
-        id: '18',
-        que_no: 'Q18090169',
-        support: 'ประสิทธิ์',
-        chat_time: '00:15:36',
-        start_date: '09/01/2569',
-        end_time: '09/01/2569',
-        history: 'สวัสดีครับ จะสอบถาม...'
-    }
 
 ]
 </script>

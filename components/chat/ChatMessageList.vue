@@ -1,5 +1,8 @@
 <template>
-    <div class="h-full overflow-y-auto p-2 space-y-4 chant-high">
+  <div
+    ref="chatContainer"
+    class="h-full overflow-y-auto p-2 space-y-4 chant-high"
+  >
     <div
       v-for="(msg, index) in messages"
       :key="index"
@@ -14,29 +17,50 @@
         "
       >
         <p>{{ msg.text }}</p>
-
         <div class="text-[10px] mt-1 text-right opacity-70">
           {{ formatTime(msg.createdAt) }}
         </div>
       </div>
     </div>
   </div>
-  </template>
+</template>
+
   
   <script setup>
-    defineProps({
-      messages: {
-        type: Array,
-        required: true
-      }
-    })
-    
-    const formatTime = (date) => {
-      if (!date) return ''
-      return new Date(date).toLocaleTimeString('th-TH', {
-        hour: '2-digit',
-        minute: '2-digit'
-      })
-    }
+   import { ref, watch, nextTick } from 'vue'
+
+const props = defineProps({
+  messages: {
+    type: Array,
+    required: true
+  }
+})
+
+const chatContainer = ref(null)
+
+const scrollToBottom = async () => {
+  await nextTick()
+  if (chatContainer.value) {
+    chatContainer.value.scrollTop =
+      chatContainer.value.scrollHeight
+  }
+}
+
+// 👇 ทุกครั้งที่ messages เปลี่ยน ให้ scroll ลง
+watch(
+  () => props.messages.length,
+  () => {
+    scrollToBottom()
+  }
+)
+
+const formatTime = (date) => {
+  if (!date) return ''
+  return new Date(date).toLocaleTimeString('th-TH', {
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
     </script>
     
