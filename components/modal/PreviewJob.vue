@@ -12,61 +12,52 @@
             <div class="px-4 py-3 border-t bg-gray-100">
                 <div class="">
                     รายละเอียดลูกค้า
-                    <div class="bg-white p-4 my-2 rounded-lg grid grid-cols-2 gap-8 min-h-[160px] border border-gray-200">
-                        <div class="text-sm">
-                            <div class="py-2 flex">
-                                คิวที่ :
-                                <p class="text-sky-500 ml-1">
-                                    4
-                                </p>
-                            </div>
-                            <div class="py-2 flex">
-                                วันที่ :
-                                <p class="text-sky-500 ml-1">
-                                    09/01/2569
-                                </p>
-                            </div>
-                            <div class="py-2 flex">
-                                ชื่อ :
-                                <p class="text-sky-500 ml-1">
-                                    4
-                                </p>
-                            </div>
-                            <div class="py-2 flex">
-                                Merchant :
-                                <p class="text-sky-500 ml-1">
-                                    4
-                                </p>
-                            </div>
+                    <div
+                        class="bg-white p-4 my-2 rounded-lg grid grid-cols-2 gap-4 min-h-[160px] border border-gray-200">
+                        <div class="py-2 flex">
+                            เลขที่คิว :
+                            <p class="text-sky-500 ml-1">
+                                {{ queue?.que_no }}
+                            </p>
+                        </div>
+
+                        <div class="py-2 flex">
+                            วันที่ :
+                            <p class="text-sky-500 ml-1">
+                                {{ queue?.start_date }}
+                            </p>
+                        </div>
+
+                        <div class="py-2 flex">
+                            ชื่อ :
+                            <p class="text-sky-500 ml-1">
+                                {{ queue?.user }}
+                            </p>
+                        </div>
+
+                        <div class="py-2 flex">
+                            Merchant :
+                            <p class="text-sky-500 ml-1">
+                                {{ queue?.merchant }}
+                            </p>
                         </div>
 
 
-                        <div class="text-sm">
-                            <div class="py-2 flex">
-                                เลขที่คิว :
-                                <p class="text-sky-500 ml-1">
-                                    4
-                                </p>
-                            </div>
-                            <div class="py-2 flex">
-                                เวลาขอรับบริการ :
-                                <p class="text-sky-500 ml-1">
-                                    4
-                                </p>
-                            </div>
-                            <div class="py-2 flex">
-                                ร้านค้า :
-                                <p class="text-sky-500 ml-1">
-                                    4
-                                </p>
-                            </div>
-                            <div class="py-2 flex">
-                                เบอร์โทรศัพท์ :
-                                <p class="text-sky-500 ml-1">
-                                    4
-                                </p>
-                            </div>
+
+                        <div class="py-2 flex">
+                            เบอร์โทรศัพท์ :
+                            <p class="text-sky-500 ml-1">
+                                {{ queue?.tel }}
+                            </p>
                         </div>
+
+                        <div class="py-2 flex">
+                            เวลาขอรับบริการ :
+                            <p class="text-sky-500 ml-1">
+                                {{ queue?.start_time }}
+                            </p>
+                        </div>
+
 
                     </div>
                 </div>
@@ -93,3 +84,18 @@
         </div>
     </div>
 </template>
+
+<script setup lang="ts">
+defineProps<{
+    queue: {
+        que_no: string
+        user: string
+        member_no: string
+        merchant: string
+        tel: string
+        start_date: string
+        start_time: string
+        status: string
+    } | null
+}>()
+</script>
