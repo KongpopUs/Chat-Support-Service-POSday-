@@ -1,35 +1,40 @@
-<template>
-    <div class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div class="bg-white w-full max-w-2xl rounded-xl shadow-lg flex flex-col max-h-[90vh]">
-  
-        <div class="flex justify-between items-center p-4">
-          <h3 class="text-lg font-semibold">เลือกไฟล์</h3>
-          <button @click="$emit('close')">
-            <span class="material-symbols-outlined">close</span>
-          </button>
-        </div>
-  
-        <div class="p-4 border-t">
-          <label
-            class="border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center text-gray-500 cursor-pointer hover:border-sky-500">
-            <span class="material-symbols-outlined text-4xl mb-1">
-              upload
-            </span>
-            <p>คลิกเพื่ออัปโหลดไฟล์</p>
-            <input type="file" class="hidden" />
-          </label>
-        </div>
-  
-        <div class="flex justify-end gap-2 p-4 border-t">
-          <button class="px-4 py-2 border rounded-lg" @click="$emit('close')">
-            กลับ
-          </button>
-          <button class="px-4 py-2 bg-sky-500 text-white rounded-lg">
-            ยืนยัน
-          </button>
-        </div>
-  
+<!-- <template>
+  <div class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+    <div class="bg-white w-full max-w-2xl rounded-xl shadow-lg flex flex-col max-h-[90vh]">
+
+      <div class="flex justify-between items-center p-4">
+        <h3 class="text-lg font-semibold">เลือกไฟล์</h3>
+        <button @click="$emit('close')">
+          <span class="material-symbols-outlined">close</span>
+        </button>
       </div>
+
+      <div class="p-4 border-t">
+        <label
+          class="border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center text-gray-500 cursor-pointer hover:border-sky-500">
+          <span class="material-symbols-outlined text-4xl mb-1">
+            upload
+          </span>
+          <p>คลิกเพื่ออัปโหลดไฟล์</p>
+          <input type="file" class="hidden" />
+        </label>
+      </div>
+
+      <div class="flex justify-end gap-2 p-4 border-t">
+        <button class="px-4 py-2 border rounded-lg" @click="$emit('close')">
+          กลับ
+        </button>
+        <button class="px-4 py-2 bg-sky-500 text-white rounded-lg">
+          ยืนยัน
+        </button>
+      </div>
+
     </div>
-  </template>
-  
+  </div>
+</template>
+
+<script setup lang="ts">
+defineEmits<{
+  (e: 'close'): void
+}>()
+</script> -->

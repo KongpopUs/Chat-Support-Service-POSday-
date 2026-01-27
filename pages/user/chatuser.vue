@@ -5,83 +5,108 @@
 
     <div class="flex-1 min-h-0 bg-white relative">
 
-      <ChatMessageList v-if="messages.length > 0" :messages="messages" />
+      <ChatMessageList
+        v-if="messages.length > 0"
+        :messages="messages"
+        :loading="loading"
+      />
 
-      <div v-else class="absolute inset-0 flex items-center justify-center text-gray-400 text-center px-6">
+      <div
+        v-else
+        class="absolute inset-0 flex items-center justify-center text-gray-400 text-center px-6"
+      >
         <div>
           <p class="text-lg font-medium">ยังไม่มีข้อความ</p>
-          <p class="text-sm mt-1">
-            พิมพ์ข้อความเพื่อเริ่มต้นการสนทนา
-          </p>
+          <p class="text-sm mt-1">พิมพ์ข้อความเพื่อเริ่มต้นการสนทนา</p>
         </div>
+      </div>
+
+      <!-- Error message -->
+      <div
+        v-if="error"
+        class="absolute top-4 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg"
+      >
+        {{ error }}
       </div>
 
     </div>
 
-
-    <ChatInputBar @send="handleSendMessage" @toggleMenu="toggleMenu" @openFile="showFileModal = true"
-      @openImage="showImageModal = true">
+    <ChatInputBar
+      :disabled="!session || session.status === 'closed'"
+      :sending="loading"
+      @send="handleSendMessage"
+      @toggleMenu="toggleMenu"
+      @uploadFile="handleUploadFile"
+      @uploadImage="handleUploadImage"
+    >
       <template #menu>
         <ChatMenu v-if="showMenu" @close="closeMenu" />
       </template>
     </ChatInputBar>
 
-    <ImageModal v-if="showImageModal" :images="images" @close="showImageModal = false" />
-
-    <FileModal v-if="showFileModal" @close="showFileModal = false" />
-
     <BackdropBlur v-if="showMenu" @click="closeMenu" />
+
+    <!-- Rating Modal -->
+    <Rating
+      v-if="showRating"
+      @close="showRating = false"
+      @submit="handleRatingSubmit"
+    />
 
   </div>
 </template>
 
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { useChatUser } from '~/composables/useChatUser'
+import ChatHeader from '~/components/chat/ChatHeader.vue'
+import ChatMessageList from '~/components/chat/ChatMessageList.vue'
+import ChatInputBar from '~/components/chat/ChatInputBar.vue'
+import ChatMenu from '~/components/chat/ChatMenu.vue'
+import BackdropBlur from '~/components/ui/BackdropBlur.vue'
+import Rating from '~/components/modal/Rating.vue'
 
-<script setup>
-import { ref } from 'vue'
+// ⚠️ TODO: Get customer ID from auth/session
+const CUSTOMER_ID = 'customer-123'
 
-import ChatHeader from '@/components/chat/ChatHeader.vue'
-import ChatMessageList from '@/components/chat/ChatMessageList.vue'
-import ChatInputBar from '@/components/chat/ChatInputBar.vue'
-import ChatMenu from '@/components/chat/ChatMenu.vue'
-import ImageModal from '@/components/modal/ImageModal.vue'
-import FileModal from '@/components/modal/FileModal.vue'
-import BackdropBlur from '@/components/ui/BackdropBlur.vue'
+const {
+  session,
+  messages,
+  customerInfo,
+  loading,
+  error,
+  sendMessage,
+  uploadImage,
+  uploadFile,
+  submitRating
+} = useChatUser(CUSTOMER_ID)
 
 const showMenu = ref(false)
-const showImageModal = ref(false)
-const showFileModal = ref(false)
+const showRating = ref(false)
 
 const toggleMenu = () => (showMenu.value = !showMenu.value)
 const closeMenu = () => (showMenu.value = false)
 
-const messages = ref([])
-
-const handleSendMessage = (text) => {
-  messages.value.push({
-    text,
-    isMe: true,
-    createdAt: new Date()
-  })
-
-  // mock reply
-  setTimeout(() => {
-    messages.value.push({
-      text: 'สวัสดีค่ะ คุณลูกค้าหมายเลขสมาชิก MB... บริษัท... posday service ยินดี ให้บริการค่ะ ทางคุณลูกค้าสามารถสอบถาม หรือขอคำปรึกษาได้เลย ทางเจ้าหน้าที่ จะรีบเข้ามาติดต่อเร็วที่สุดค่ะ โดยคิวของคุณลูกค้าคือคิวที่ “...” ค่ะ',
-      isMe: false,
-      createdAt: new Date()
-    })
-  }, 500)
+const handleSendMessage = async (text: string) => {
+  await sendMessage(text)
 }
 
+const handleUploadImage = async (file: File) => {
+  await uploadImage(file)
+}
 
-const images = [
-  'image01.jpg',
-  'image02.jpg',
-  'image03.jpg',
-  'image04.jpg',
-  'image05.jpg',
-  'image06.jpg',
-  'image07.jpg',
-  'image08.jpg'
-]
+const handleUploadFile = async (file: File) => {
+  await uploadFile(file)
+}
+
+const handleRatingSubmit = async (payload: { rating: number; comment: string }) => {
+  if (!session.value) return
+  await submitRating(payload.rating, payload.comment)
+  showRating.value = false
+}
+
+// Listen for session completion from support
+onMounted(() => {
+  // TODO: Listen to SignalR event for showing rating modal
+})
 </script>

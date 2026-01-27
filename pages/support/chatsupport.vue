@@ -5,56 +5,77 @@
 
     <div class="flex flex-1 min-h-0 h-full">
 
-      <ChatSessionList class="hidden md:block basis-1/4 border-r border-gray-200 h-full max-h-full" :sessions="sessions"
-        @select="selectSession" />
+      <!-- Sidebar -->
+      <ChatSessionList
+        class="hidden md:block basis-1/4 border-r border-gray-200 h-full max-h-full"
+        :assignedSessions="assignedSessions"
+        :activeSessionId="activeSession?.id"
+        @select="handleSelectSession"
+      />
 
+      <!-- Main Chat -->
       <div class="basis-3/3 flex flex-col min-h-0 relative w-full">
 
-        <ChatSessionInfo name="A บริษัท BC" merchantId="1000001" phone="023456789"
-          supportTime="00:10:15 นาที" avatar="A" />
+        <!-- Session Info -->
+        <ChatSessionInfo
+          v-if="activeSession"
+          :name="activeSession.customerName || 'ลูกค้า'"
+          :merchantId="activeSession.merchantId"
+          :phone="activeSession.phone"
+          :supportTime="chatDuration"
+          :avatar="activeSession.customerName?.charAt(0)"
+        />
 
-        <div class="flex-1 min-h-0 bg-white relative">
-
-          <ChatMessageList v-if="messages.length > 0" :messages="messages" />
-
-          <div v-else class="absolute inset-0 flex items-center justify-center text-gray-400 text-center px-6">
-            <div>
-              <p class="text-lg font-medium">ยังไม่มีข้อความ</p>
-              <p class="text-sm mt-1">
-                พิมพ์ข้อความเพื่อเริ่มต้นการสนทนา
-              </p>
-            </div>
+        <!-- Empty state -->
+        <div
+          v-if="!activeSession"
+          class="flex-1 flex items-center justify-center text-gray-400"
+        >
+          <div class="text-center">
+            <span class="material-symbols-outlined text-6xl mb-2">chat_bubble_outline</span>
+            <p class="text-lg">เลือกแชทจากด้านซ้าย</p>
           </div>
-
         </div>
 
-        <ChatInputBar @send="handleSendMessage" @toggleMenu="toggleMenu" @openFile="showFileModal = true"
-          @openImage="showImageModal = true">
+        <!-- Messages -->
+        <div v-else class="flex-1 min-h-0 bg-white relative">
+          <ChatMessageList
+            v-if="messages.length > 0"
+            :messages="messages"
+            :loading="loading"
+          />
+
+          <div
+            v-else
+            class="absolute inset-0 flex items-center justify-center text-gray-400 text-center px-6"
+          >
+            <div>
+              <p class="text-lg font-medium">ยังไม่มีข้อความ</p>
+              <p class="text-sm mt-1">พิมพ์ข้อความเพื่อเริ่มต้นการสนทนา</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Input -->
+        <ChatInputBar
+          v-if="activeSession"
+          :disabled="!activeSession || activeSession.status === 'completed'"
+          :sending="loading"
+          @send="handleSendMessage"
+          @toggleMenu="toggleMenu"
+          @uploadFile="handleUploadFile"
+          @uploadImage="handleUploadImage"
+        >
           <template #menu>
             <ChatMenu v-if="showMenu" @close="closeMenu" />
           </template>
         </ChatInputBar>
 
-        <!-- MOCK BUTTON : SHOW RATING -->
-<!-- <div class="flex justify-end p-3 border-t bg-white">
-  <button
-    class="px-4 py-2 bg-emerald-500 text-white rounded-lg text-sm"
-    @click="showRating = true"
-  >
-    จบการสนทนา / ให้คะแนน
-  </button>
-</div> -->
-
-
-        <ImageModal v-if="showImageModal" :images="images" @close="showImageModal = false" />
-
-        <FileModal v-if="showFileModal" @close="showFileModal = false" />
-<!-- 
-        <Rating
-  v-if="showRating"
-  @close="showRating = false"
-/> -->
-
+        <!-- End Job Button -->
+        <EndJobButton
+          v-if="activeSession && activeSession.status === 'in-progress'"
+          @end="handleEndJob"
+        />
 
         <BackdropBlur v-if="showMenu" @click="closeMenu" />
 
@@ -64,75 +85,93 @@
   </div>
 </template>
 
-<script setup>
-import { ref } from 'vue'
+<script setup lang="ts">
+import { ref, computed, watch } from 'vue'
+import { useChatSupport } from '~/composables/useChatSupport'
+import ChatHeader from '~/components/chat/ChatHeader.vue'
+import ChatSessionList from '~/components/chat/ChatSessionList.vue'
+import ChatSessionInfo from '~/components/chat/ChatSessionInfo.vue'
+import ChatMessageList from '~/components/chat/ChatMessageList.vue'
+import ChatInputBar from '~/components/chat/ChatInputBar.vue'
+import ChatMenu from '~/components/chat/ChatMenu.vue'
+import EndJobButton from '~/components/button/EndJobButton.vue'
+import BackdropBlur from '~/components/ui/BackdropBlur.vue'
 
-import ChatHeader from '@/components/chat/ChatHeader.vue'
-import ChatSessionList from '@/components/chat/ChatSessionList.vue'
-import ChatMessageList from '@/components/chat/ChatMessageList.vue'
-import ChatInputBar from '@/components/chat/ChatInputBar.vue'
-import ChatMenu from '@/components/chat/ChatMenu.vue'
-import ChatSessionInfo from '@/components/chat/ChatSessionInfo.vue'
+// ⚠️ TODO: Get support ID from auth
+const SUPPORT_ID = 'support-123'
 
-
-import ImageModal from '@/components/modal/ImageModal.vue'
-import FileModal from '@/components/modal/FileModal.vue'
-import BackdropBlur from '@/components/ui/BackdropBlur.vue'
-// import Rating from '../../components/modal/Rating.vue'
-
-// const showRating = ref(false)
-
+const {
+  assignedSessions,
+  messages,
+  activeSession,
+  loading,
+  selectSession,
+  sendMessage,
+  uploadImage,
+  uploadFile,
+  completeSession
+} = useChatSupport(SUPPORT_ID)
 
 const showMenu = ref(false)
-const showImageModal = ref(false)
-const showFileModal = ref(false)
-
-const selectSession = (session) => {
-  console.log('เลือกห้อง:', session)
-}
-
-const messages = ref([])
+const chatStartTime = ref<Date | null>(null)
+const chatDuration = ref('00:00:00')
 
 const toggleMenu = () => (showMenu.value = !showMenu.value)
 const closeMenu = () => (showMenu.value = false)
 
-
-const handleSendMessage = (text) => {
-  messages.value.push({
-    text,
-    isMe: true,
-    createdAt: new Date()
-  })
-
-  // mock reply
-  setTimeout(() => {
-    messages.value.push({
-      text: 'สวัสดีค่ะ คุณลูกค้าหมายเลขสมาชิก MB... บริษัท... posday service ยินดี ให้บริการค่ะ ทางคุณลูกค้าสามารถสอบถาม หรือขอคำปรึกษาได้เลย ทางเจ้าหน้าที่ จะรีบเข้ามาติดต่อเร็วที่สุดค่ะ โดยคิวของคุณลูกค้าคือคิวที่ “...” ค่ะ',
-      isMe: false,
-      createdAt: new Date()
-    })
-  }, 500)
+const handleSelectSession = async (sessionId: string) => {
+  await selectSession(sessionId)
+  chatStartTime.value = new Date()
+  updateChatDuration()
 }
 
+const handleSendMessage = async (text: string) => {
+  await sendMessage(text)
+}
 
-const sessions = ref([
-  {
-    id: 1,
-    name: 'A บริษัท BC',
-    lastMessage: 'สวัสดีค่ะ มีเรื่องจะสอบถาม...',
-    avatar: 'A',
-    hasUnread: true
+const handleUploadImage = async (file: File) => {
+  await uploadImage(file)
+}
+
+const handleUploadFile = async (file: File) => {
+  await uploadFile(file)
+}
+
+const handleEndJob = async () => {
+  if (!activeSession.value) return
+
+  const confirmed = confirm('คุณต้องการจบงานนี้ใช่หรือไม่?')
+  if (!confirmed) return
+
+  await completeSession(activeSession.value.id)
+  chatStartTime.value = null
+  chatDuration.value = '00:00:00'
+}
+
+// Update chat duration every second
+let durationInterval: NodeJS.Timeout | null = null
+
+const updateChatDuration = () => {
+  if (durationInterval) clearInterval(durationInterval)
+
+  durationInterval = setInterval(() => {
+    if (!chatStartTime.value) return
+
+    const now = new Date()
+    const diff = now.getTime() - chatStartTime.value.getTime()
+
+    const hours = Math.floor(diff / (1000 * 60 * 60))
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000)
+
+    chatDuration.value = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+  }, 1000)
+}
+
+watch(activeSession, (newSession) => {
+  if (!newSession) {
+    if (durationInterval) clearInterval(durationInterval)
+    chatDuration.value = '00:00:00'
   }
-])
-
-const images = [
-  'image01.jpg',
-  'image02.jpg',
-  'image03.jpg',
-  'image04.jpg',
-  'image05.jpg',
-  'image06.jpg',
-  'image07.jpg',
-  'image08.jpg'
-]
+})
 </script>

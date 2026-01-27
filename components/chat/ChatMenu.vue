@@ -3,7 +3,7 @@
     <NuxtLink
       :to="historyRoute"
       class="flex items-center gap-2 px-4 py-3 hover:bg-gray-100 text-sky-500"
-      @click="$emit('close')"
+      @click="emit('close')"
     >
       <span class="material-symbols-outlined text-base">
         {{ menuIcon }}
@@ -13,29 +13,31 @@
   </div>
 </template>
 
-<script setup>
-import { useRoute } from '#imports'
+<script setup lang="ts">
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
+
+const emit = defineEmits<{
+  (e: 'close'): void
+}>()
 
 const route = useRoute()
 
-const historyRoute = computed(() => {
-  if (route.path.startsWith('/user')) {
-    return '/user/historyuser'
-  }
-  if (route.path.startsWith('/support')) {
-    return '/support/supdashboard'
-  }
-  return '/'
-})
+const isSupport = computed(() =>
+  route.path.startsWith('/support')
+)
 
-const menuLabel = computed(() => {
-  if (route.path.startsWith('/support')) {
-    return 'คิวทั้งหมด'
-  }
-  return 'ประวัติการแชท'
-})
+const historyRoute = computed(() =>
+  isSupport.value
+    ? '/support/supdashboard'
+    : '/user/historyuser'
+)
+
+const menuLabel = computed(() =>
+  isSupport.value ? 'คิวทั้งหมด' : 'ประวัติการแชท'
+)
 
 const menuIcon = computed(() =>
-  route.path.startsWith('/support') ? 'list_alt' : 'history'
+  isSupport.value ? 'list_alt' : 'history'
 )
 </script>
