@@ -35,9 +35,26 @@
           </template>
         </ChatInputBar>
 
+        <!-- MOCK BUTTON : SHOW RATING -->
+<!-- <div class="flex justify-end p-3 border-t bg-white">
+  <button
+    class="px-4 py-2 bg-emerald-500 text-white rounded-lg text-sm"
+    @click="showRating = true"
+  >
+    จบการสนทนา / ให้คะแนน
+  </button>
+</div> -->
+
+
         <ImageModal v-if="showImageModal" :images="images" @close="showImageModal = false" />
 
         <FileModal v-if="showFileModal" @close="showFileModal = false" />
+<!-- 
+        <Rating
+  v-if="showRating"
+  @close="showRating = false"
+/> -->
+
 
         <BackdropBlur v-if="showMenu" @click="closeMenu" />
 
@@ -61,6 +78,10 @@ import ChatSessionInfo from '@/components/chat/ChatSessionInfo.vue'
 import ImageModal from '@/components/modal/ImageModal.vue'
 import FileModal from '@/components/modal/FileModal.vue'
 import BackdropBlur from '@/components/ui/BackdropBlur.vue'
+// import Rating from '../../components/modal/Rating.vue'
+
+// const showRating = ref(false)
+
 
 const showMenu = ref(false)
 const showImageModal = ref(false)
