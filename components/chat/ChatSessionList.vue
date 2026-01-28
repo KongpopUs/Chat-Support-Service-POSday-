@@ -1,7 +1,13 @@
 <template>
   <div class="bg-white flex flex-col h-full">
-    <div class="p-3 border-b border-gray-200">
-      <h3 class="font-semibold text-base text-gray-600">แชทที่รับแล้ว</h3>
+    <div class="p-3 border-b border-gray-200 flex justify-between items-center text-gray-600">
+      <h3 class="font-semibold text-base">แชทที่รับแล้ว</h3>
+      <NuxtLink 
+        to="/support/supdashboard" 
+        class="material-symbols-outlined hover:text-sky-500 transition"
+      >
+        home
+      </NuxtLink>
     </div>
 
     <div class="flex-1 overflow-y-auto">

@@ -35,6 +35,8 @@ export interface ChatSession {
   chatDuration?: string
   createdAt: string
   updatedAt: string
+  rating?: number
+  comment?: string
 }
 
 export interface ChatQueue {
