@@ -33,10 +33,10 @@ export interface ChatSession {
   endDate?: string
   endTime?: string
   chatDuration?: string
+  rating?: number      
+  comment?: string          
   createdAt: string
   updatedAt: string
-  rating?: number
-  comment?: string
 }
 
 export interface ChatQueue {

@@ -24,7 +24,7 @@
       <!-- Error message -->
       <div
         v-if="error"
-        class="absolute top-4 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg"
+        class="absolute top-4 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg z-50"
       >
         {{ error }}
       </div>
@@ -32,7 +32,7 @@
     </div>
 
     <ChatInputBar
-      :disabled="!session || session.status === 'closed'"
+      :disabled="!currentSession || currentSession.status === 'closed' || loading"
       :sending="loading"
       @send="handleSendMessage"
       @toggleMenu="toggleMenu"
@@ -57,8 +57,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, watch } from 'vue'
 import { useChatUser } from '~/composables/useChatUser'
+import { apiService } from '~/services/api.service'
 import ChatHeader from '~/components/chat/ChatHeader.vue'
 import ChatMessageList from '~/components/chat/ChatMessageList.vue'
 import ChatInputBar from '~/components/chat/ChatInputBar.vue'
@@ -66,20 +67,20 @@ import ChatMenu from '~/components/chat/ChatMenu.vue'
 import BackdropBlur from '~/components/ui/BackdropBlur.vue'
 import Rating from '~/components/modal/Rating.vue'
 
-// ⚠️ TODO: Get customer ID from auth/session
-const CUSTOMER_ID = 'customer-123'
+// ⭐ สร้าง session ก่อน
+const initialSession = await apiService.createChatSession()
 
+// ⭐ ส่ง session ไปให้ composable
 const {
-  session,
+  session: currentSession,
   messages,
-  customerInfo,
   loading,
   error,
   sendMessage,
   uploadImage,
   uploadFile,
   submitRating
-} = useChatUser(CUSTOMER_ID)
+} = useChatUser(initialSession)
 
 const showMenu = ref(false)
 const showRating = ref(false)
@@ -100,13 +101,14 @@ const handleUploadFile = async (file: File) => {
 }
 
 const handleRatingSubmit = async (payload: { rating: number; comment: string }) => {
-  if (!session.value) return
   await submitRating(payload.rating, payload.comment)
   showRating.value = false
 }
 
-// Listen for session completion from support
-onMounted(() => {
-  // TODO: Listen to SignalR event for showing rating modal
+// ⭐ Watch session status เพื่อแสดง rating modal
+watch(() => currentSession.value.status, (newStatus) => {
+  if (newStatus === 'completed') {
+    showRating.value = true
+  }
 })
 </script>

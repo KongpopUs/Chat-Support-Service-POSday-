@@ -1,16 +1,15 @@
 // composables/useChatUser.ts
 
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import type { ChatMessage, ChatSession, CustomerInfo } from '~/types/chat'
+import { ref, onMounted, onUnmounted } from 'vue'
+import type { ChatMessage, ChatSession } from '~/types/chat'
 import { useSignalR } from './useSignalR'
 import { apiService } from '~/services/api.service'
 
-export function useChatUser(customerId: string) {
-  const { connect, disconnect, on, off, send } = useSignalR()
+export function useChatUser(initialSession: ChatSession) {
+  const { connect, disconnect, on, off, send, joinSession } = useSignalR()
 
-  const session = ref<ChatSession | null>(null)
+  const session = ref<ChatSession>(initialSession)
   const messages = ref<ChatMessage[]>([])
-  const customerInfo = ref<CustomerInfo | null>(null)
   const loading = ref(false)
   const error = ref<string | null>(null)
 
@@ -21,60 +20,24 @@ export function useChatUser(customerId: string) {
       loading.value = true
       error.value = null
 
-      // 1. Connect SignalR
-      await connect(customerId, 'customer')
+      // 1. Connect SignalR ใช้ session.id เป็น userId
+      await connect(session.value.id, 'customer')
 
-      // 2. Load customer info
-      customerInfo.value = await apiService.getCustomerInfo(customerId)
+      // 2. Join session room
+      await joinSession(session.value.id)
 
-      // 3. Create or get active session
-      const sessions = await apiService.getChatSessions('waiting')
-      
-      if (sessions.length > 0) {
-        session.value = sessions[0]
-      } else {
-        session.value = await apiService.createChatSession(customerId)
-      }
+      // 3. Load messages
+      messages.value = await apiService.getChatMessages(session.value.id)
 
-      // 4. Load messages
-      if (session.value) {
-        messages.value = await apiService.getChatMessages(session.value.id)
-      }
-
-      // 5. Setup SignalR listeners
+      // 4. Setup SignalR listeners
       setupSignalRListeners()
 
-      // 6. Send auto-reply if first time
-      if (messages.value.length === 0 && session.value) {
-        await sendAutoReply()
-      }
-
     } catch (err: any) {
-      error.value = err.message
+      error.value = err.message || 'เกิดข้อผิดพลาด'
       console.error('❌ Init error:', err)
     } finally {
       loading.value = false
     }
-  }
-
-  // =============== AUTO REPLY ===============
-  
-  const sendAutoReply = async () => {
-    if (!session.value || !customerInfo.value) return
-
-    const queuePosition = await apiService.getQueuePosition(session.value.id)
-
-    const autoReplyText = `สวัสดีค่ะ คุณลูกค้าหมายเลขสมาชิก ${customerInfo.value.memberNo} บริษัท ${customerInfo.value.companyName} posday service ยินดีให้บริการค่ะ ทางคุณลูกค้าสามารถสอบถาม หรือขอคำปรึกษาได้เลย ทางเจ้าหน้าที่จะรีบเข้ามาติดต่อเร็วที่สุดค่ะ โดยคิวของคุณลูกค้าคือคิวที่ ${queuePosition} ค่ะ`
-
-    const autoMessage: ChatMessage = {
-      id: crypto.randomUUID(),
-      sessionId: session.value.id,
-      sender: 'system',
-      text: autoReplyText,
-      createdAt: new Date().toISOString()
-    }
-
-    messages.value.push(autoMessage)
   }
 
   // =============== SIGNALR LISTENERS ===============
@@ -82,26 +45,32 @@ export function useChatUser(customerId: string) {
   const setupSignalRListeners = () => {
     // รับข้อความใหม่
     on('ReceiveMessage', (message: ChatMessage) => {
-      if (message.sessionId === session.value?.id) {
+      if (message.sessionId === session.value.id) {
         messages.value.push(message)
-        
-        // Play notification sound
         playNotificationSound()
       }
     })
 
     // Session updated
     on('SessionUpdated', (updatedSession: ChatSession) => {
-      if (updatedSession.id === session.value?.id) {
+      if (updatedSession.id === session.value.id) {
         session.value = updatedSession
       }
     })
 
     // Support assigned
     on('SupportAssigned', (data: { sessionId: string; supportName: string }) => {
-      if (data.sessionId === session.value?.id && session.value) {
+      if (data.sessionId === session.value.id) {
         session.value.supportName = data.supportName
         session.value.status = 'in-progress'
+      }
+    })
+
+    // Session completed - แสดง rating modal
+    on('SessionCompleted', (sessionId: string) => {
+      if (sessionId === session.value.id) {
+        session.value.status = 'completed'
+        // Emit event to parent component
       }
     })
   }
@@ -109,7 +78,7 @@ export function useChatUser(customerId: string) {
   // =============== SEND MESSAGE ===============
   
   const sendMessage = async (text: string) => {
-    if (!session.value || !text.trim()) return
+    if (!text.trim()) return
 
     try {
       loading.value = true
@@ -138,16 +107,12 @@ export function useChatUser(customerId: string) {
         messages.value[index] = savedMessage
       }
 
-      // Send via SignalR for real-time
-      await send('SendMessage', {
-        sessionId: session.value.id,
-        text: text.trim(),
-        sender: 'customer'
-      })
-
     } catch (err: any) {
       error.value = 'ส่งข้อความไม่สำเร็จ'
       console.error('❌ Send message error:', err)
+      
+      // Remove failed message
+      messages.value = messages.value.filter(m => m.id !== tempMessage.id)
     } finally {
       loading.value = false
     }
@@ -156,19 +121,11 @@ export function useChatUser(customerId: string) {
   // =============== UPLOAD IMAGE ===============
   
   const uploadImage = async (file: File) => {
-    if (!session.value) return
-
     try {
       loading.value = true
 
       const message = await apiService.uploadChatImage(session.value.id, file)
       messages.value.push(message)
-
-      await send('SendMessage', {
-        sessionId: session.value.id,
-        imageUrl: message.imageUrl,
-        sender: 'customer'
-      })
 
     } catch (err: any) {
       error.value = 'อัปโหลดรูปภาพไม่สำเร็จ'
@@ -181,19 +138,11 @@ export function useChatUser(customerId: string) {
   // =============== UPLOAD FILE ===============
   
   const uploadFile = async (file: File) => {
-    if (!session.value) return
-
     try {
       loading.value = true
 
       const message = await apiService.uploadChatFile(session.value.id, file)
       messages.value.push(message)
-
-      await send('SendMessage', {
-        sessionId: session.value.id,
-        fileUrl: message.fileUrl,
-        sender: 'customer'
-      })
 
     } catch (err: any) {
       error.value = 'อัปโหลดไฟล์ไม่สำเร็จ'
@@ -206,16 +155,11 @@ export function useChatUser(customerId: string) {
   // =============== RATING ===============
   
   const submitRating = async (rating: number, comment: string) => {
-    if (!session.value) return
-
     try {
       loading.value = true
 
       await apiService.submitRating(session.value.id, rating, comment)
-      
-      if (session.value) {
-        session.value.status = 'closed'
-      }
+      session.value.status = 'closed'
 
     } catch (err: any) {
       error.value = 'ส่งคะแนนไม่สำเร็จ'
@@ -243,13 +187,13 @@ export function useChatUser(customerId: string) {
     off('ReceiveMessage')
     off('SessionUpdated')
     off('SupportAssigned')
+    off('SessionCompleted')
   })
 
   return {
     // State
     session,
     messages,
-    customerInfo,
     loading,
     error,
 
