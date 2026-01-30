@@ -121,8 +121,8 @@
                   <td class="px-4 py-2 text-sm">{{ item.memberNo }}</td>
                   <td class="px-4 py-2 text-sm">{{ item.merchantId }}</td>
                   <td class="px-4 py-2 text-sm">{{ item.phone }}</td>
-                  <td class="px-4 py-2 text-sm">{{ item.startDate }}</td>
-                  <td class="px-4 py-2 text-sm">{{ item.startTime }}</td>
+                  <td class="px-4 py-2 text-sm">{{ formatThaiDate(item.startDate) }}</td>
+                  <td class="px-4 py-2 text-sm">{{ formatThaiTime(item.startDate) }}</td>
                   <td class="px-4 py-2 text-sm">
                     <span
                       class="px-2 py-1 rounded-full text-xs"
@@ -353,4 +353,29 @@
   onMounted(() => {
     // Data will be loaded by composable
   })
+
+// ===== DATE FORMATTERS (TH) =====
+const formatThaiDate = (dateString?: string) => {
+  if (!dateString) return '-'
+  const date = new Date(dateString)
+
+  return new Intl.DateTimeFormat('th-TH', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric'
+  }).format(date)
+}
+
+const formatThaiTime = (dateString?: string) => {
+  if (!dateString) return '-'
+  const date = new Date(dateString)
+
+  return new Intl.DateTimeFormat('th-TH', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  }).format(date)
+}
+  
   </script>

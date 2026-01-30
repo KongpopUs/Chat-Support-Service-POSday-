@@ -1,35 +1,85 @@
 // composables/useChatUser.ts
-
 import { ref, onMounted, onUnmounted } from 'vue'
 import type { ChatMessage, ChatSession } from '~/types/chat'
 import { useSignalR } from './useSignalR'
 import { apiService } from '~/services/api.service'
 
 export function useChatUser(initialSession: ChatSession) {
-  const { connect, disconnect, on, off, send, joinSession } = useSignalR()
+  const { connect, disconnect, on, off, joinSession } = useSignalR()
 
   const session = ref<ChatSession>(initialSession)
   const messages = ref<ChatMessage[]>([])
   const loading = ref(false)
   const error = ref<string | null>(null)
 
-  // =============== INIT ===============
-  
+  // ================== GUARD ==================
+  const initialized = ref(false)
+
+  // ================== SIGNALR HANDLERS ==================
+
+  const handleReceiveMessage = (message: ChatMessage) => {
+    if (message.sessionId !== session.value.id) return
+    if (messages.value.some(m => m.id === message.id)) return // 🛡 กันซ้ำ
+
+    messages.value.push(message)
+    playNotificationSound()
+  }
+
+  const handleSessionUpdated = (updatedSession: ChatSession) => {
+    if (updatedSession.id === session.value.id) {
+      session.value = updatedSession
+    }
+  }
+
+  const handleSupportAssigned = (data: { sessionId: string; supportName: string }) => {
+    if (data.sessionId === session.value.id) {
+      session.value.supportName = data.supportName
+      session.value.status = 'in-progress'
+    }
+  }
+
+  const handleSessionCompleted = (sessionId: string) => {
+    if (sessionId === session.value.id) {
+      session.value.status = 'completed'
+    }
+  }
+
+  // ================== LISTENER SETUP ==================
+
+  const setupSignalRListeners = () => {
+    // 🧹 ถอดก่อนเสมอ (กัน register ซ้ำ)
+    off('ReceiveMessage', handleReceiveMessage)
+    off('SessionUpdated', handleSessionUpdated)
+    off('SupportAssigned', handleSupportAssigned)
+    off('SessionCompleted', handleSessionCompleted)
+
+    // ✅ ใส่ใหม่
+    on('ReceiveMessage', handleReceiveMessage)
+    on('SessionUpdated', handleSessionUpdated)
+    on('SupportAssigned', handleSupportAssigned)
+    on('SessionCompleted', handleSessionCompleted)
+  }
+
+  // ================== INIT ==================
+
   const init = async () => {
+    if (initialized.value) return // 🛡 กัน init ซ้ำ
+    initialized.value = true
+
     try {
       loading.value = true
       error.value = null
 
-      // 1. Connect SignalR ใช้ session.id เป็น userId
+      // 1. Connect SignalR
       await connect(session.value.id, 'customer')
 
-      // 2. Join session room
+      // 2. Join room
       await joinSession(session.value.id)
 
-      // 3. Load messages
+      // 3. Load history
       messages.value = await apiService.getChatMessages(session.value.id)
 
-      // 4. Setup SignalR listeners
+      // 4. Setup listeners
       setupSignalRListeners()
 
     } catch (err: any) {
@@ -40,164 +90,97 @@ export function useChatUser(initialSession: ChatSession) {
     }
   }
 
-  // =============== SIGNALR LISTENERS ===============
-  
-  const setupSignalRListeners = () => {
-    // รับข้อความใหม่
-    on('ReceiveMessage', (message: ChatMessage) => {
-      if (message.sessionId === session.value.id) {
-        messages.value.push(message)
-        playNotificationSound()
-      }
-    })
+  // ================== SEND MESSAGE ==================
 
-    // Session updated
-    on('SessionUpdated', (updatedSession: ChatSession) => {
-      if (updatedSession.id === session.value.id) {
-        session.value = updatedSession
-      }
-    })
-
-    // Support assigned
-    on('SupportAssigned', (data: { sessionId: string; supportName: string }) => {
-      if (data.sessionId === session.value.id) {
-        session.value.supportName = data.supportName
-        session.value.status = 'in-progress'
-      }
-    })
-
-    // Session completed - แสดง rating modal
-    on('SessionCompleted', (sessionId: string) => {
-      if (sessionId === session.value.id) {
-        session.value.status = 'completed'
-        // Emit event to parent component
-      }
-    })
-  }
-
-  // =============== SEND MESSAGE ===============
-  
   const sendMessage = async (text: string) => {
     if (!text.trim()) return
 
     try {
       loading.value = true
 
-      // Optimistic update
-      const tempMessage: ChatMessage = {
-        id: crypto.randomUUID(),
-        sessionId: session.value.id,
-        sender: 'customer',
-        text: text.trim(),
-        createdAt: new Date().toISOString()
-      }
-
-      messages.value.push(tempMessage)
-
-      // Send to API
-      const savedMessage = await apiService.sendChatMessage(
+      // ✅ ส่งอย่างเดียว
+      await apiService.sendChatMessage(
         session.value.id,
         text.trim(),
         'customer'
       )
 
-      // Replace temp with real message
-      const index = messages.value.findIndex(m => m.id === tempMessage.id)
-      if (index !== -1) {
-        messages.value[index] = savedMessage
-      }
+      // ❌ ไม่ push message เอง
+      // รอ SignalR ReceiveMessage เท่านั้น
 
-    } catch (err: any) {
+    } catch (err) {
       error.value = 'ส่งข้อความไม่สำเร็จ'
       console.error('❌ Send message error:', err)
-      
-      // Remove failed message
-      messages.value = messages.value.filter(m => m.id !== tempMessage.id)
     } finally {
       loading.value = false
     }
   }
 
-  // =============== UPLOAD IMAGE ===============
-  
+  // ================== UPLOAD ==================
+
   const uploadImage = async (file: File) => {
     try {
       loading.value = true
-
-      const message = await apiService.uploadChatImage(session.value.id, file)
-      messages.value.push(message)
-
-    } catch (err: any) {
+      await apiService.uploadChatImage(session.value.id, file)
+    } catch (err) {
       error.value = 'อัปโหลดรูปภาพไม่สำเร็จ'
-      console.error('❌ Upload image error:', err)
+      console.error(err)
     } finally {
       loading.value = false
     }
   }
 
-  // =============== UPLOAD FILE ===============
-  
   const uploadFile = async (file: File) => {
     try {
       loading.value = true
-
-      const message = await apiService.uploadChatFile(session.value.id, file)
-      messages.value.push(message)
-
-    } catch (err: any) {
+      await apiService.uploadChatFile(session.value.id, file)
+    } catch (err) {
       error.value = 'อัปโหลดไฟล์ไม่สำเร็จ'
-      console.error('❌ Upload file error:', err)
+      console.error(err)
     } finally {
       loading.value = false
     }
   }
 
-  // =============== RATING ===============
-  
+  // ================== RATING ==================
+
   const submitRating = async (rating: number, comment: string) => {
     try {
       loading.value = true
-
       await apiService.submitRating(session.value.id, rating, comment)
       session.value.status = 'closed'
-
-    } catch (err: any) {
+    } catch (err) {
       error.value = 'ส่งคะแนนไม่สำเร็จ'
-      console.error('❌ Submit rating error:', err)
+      console.error(err)
     } finally {
       loading.value = false
     }
   }
 
-  // =============== UTILITIES ===============
-  
+  // ================== UTIL ==================
+
   const playNotificationSound = () => {
     const audio = new Audio('/notification.mp3')
-    audio.play().catch(err => console.warn('Cannot play sound:', err))
+    audio.play().catch(() => {})
   }
 
-  // =============== LIFECYCLE ===============
-  
-  onMounted(() => {
-    init()
-  })
+  // ================== LIFECYCLE ==================
+
+  onMounted(init)
 
   onUnmounted(() => {
+    off('ReceiveMessage', handleReceiveMessage)
+    off('SessionUpdated', handleSessionUpdated)
+    off('SupportAssigned', handleSupportAssigned)
+    off('SessionCompleted', handleSessionCompleted)
     disconnect()
-    off('ReceiveMessage')
-    off('SessionUpdated')
-    off('SupportAssigned')
-    off('SessionCompleted')
   })
 
   return {
-    // State
     session,
     messages,
     loading,
     error,
-
-    // Actions
     sendMessage,
     uploadImage,
     uploadFile,

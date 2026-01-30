@@ -26,7 +26,7 @@
             <div class="py-2 flex">
               <span class="text-gray-600">วันที่ :</span>
               <p class="text-sky-500 ml-1">
-                {{ queue?.startDate || '-' }}
+                {{ formatThaiDate(queue?.startDate) }}
               </p>
             </div>
 
@@ -54,7 +54,7 @@
             <div class="py-2 flex">
               <span class="text-gray-600">เวลาขอรับบริการ :</span>
               <p class="text-sky-500 ml-1">
-                {{ queue?.startTime || '-' }}
+                {{ formatThaiTime(queue?.startDate) }}
               </p>
             </div>
 
@@ -115,4 +115,27 @@ defineEmits<{
   (e: 'close'): void
   (e: 'accept'): void
 }>()
+
+const formatThaiDate = (dateString?: string) => {
+  if (!dateString) return '-'
+  const date = new Date(dateString)
+
+  return new Intl.DateTimeFormat('th-TH', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric'
+  }).format(date)
+}
+
+const formatThaiTime = (dateString?: string) => {
+  if (!dateString) return '-'
+  const date = new Date(dateString)
+
+  return new Intl.DateTimeFormat('th-TH', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  }).format(date)
+}
 </script>
